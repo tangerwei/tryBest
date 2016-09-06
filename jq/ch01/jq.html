@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>ch 01</title>
+		<script type="text/javascript" src="../jquery-3.1.0.min.js" ></script>
+		<script type="text/javascript" src="StudyRecord.js" ></script>
+		<style>
+		    #display button{
+		        width: 6em;
+		    }
+		</style>
+	</head>
+	<body>
+	    <div id="display">
+	        <button onclick="displayChange(this)">init</button>
+	        <button id="_hideDiv">hide</button>
+	        <button id="_showDiv">show</button>
+	        <button id="_fadeInDiv">fadeIn</button>
+	        <button id="_fadeOutDiv">fadeOut</button>
+	        <button id="_slideDown">slideDown</button>
+	        <button id="_slideUp">slideUp</button>
+	        <div id="record" style="margin-left: 200px;">
+	            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]1<br />
+	            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]2<br />
+	            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]3<br />
+	            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]4<br />
+	        </div>
+	    </div>
+	    <button onclick="dis_annimate()"> animate</button>
+	    <div id="display_animate_co" style="width: 800px; height: 300px;border: solid 1px black;">
+	        <div id="display_animate" style="height: 200px; width: 200px; background-color: #4395FF; border: solid 1px black;"></div>
+	    </div>
+	    <button onclick="dis_init()">Init</button>
+	    <button onclick="dis_annimate_my()">my animate</button>
+	    <button onclick="dis_annimate_my2()">my animate2</button>
+	    <button onclick="dis_annimate_my3()">my animate3</button>
+	    <section style="margin-top: 20px; border-top: solid 1px black;">
+	    <button id="textInit" onclick="textInit()">textInit</button>
+	    <div id="display_animate_max" style="width: 900px;">
+            <p style="margin-top: 0;">sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]</p>
+            <p>sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]</p>
+            <a id="alink" href="#" style="text-decoration: none;">read more</a>
+            <p>sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]1
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]2]
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]3]
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]4]</p>
+            <p>sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]1
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]2
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]3
+            sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]sdkf[spdkf[skdfoskd[goks[]dkf[sdkf]sdkg[sldlg]p]]]4</p>
+        </div>
+        </section>
+	</body>
+</html>
