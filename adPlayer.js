@@ -5,6 +5,12 @@ function AdStrategy(adBannerId, param) {
         this.param = param;
     }
 }
+AdStrategy.prototype.setAquaPassAddress = function (ip) {
+    this.aquaPassAddress = ip;
+}
+AdStrategy.prototype.setAdItemAddress = function (ip) {
+    this.adItemAddress = ip;
+}
 
 function IAdStrategyResponseListener(obj) {
     this.onResponse = obj.onResponse;
@@ -33,25 +39,37 @@ AdStrategy.prototype.onResponse = function () {
 AdStrategy.prototype.request = function () {
     //发起广告策略的请求
     var self = this;
-    var url = "";
+    var url = this.aquaPassAddress + "/aquapaas_adv/rest/ads/decision";
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-type", "application/json");
     xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
             if (this.status == 200) {//请求成功
                 var _items = JSON.parse(this.responseText);
                 //转化下数组结构
                 var items = {
-                    _value: _items
+                    _id: _items.id,
+                    _adposition: _items.adpostion,
+                    _value: _items.listOfPlacement,
+                    length: _items.listOfPlacement.length
                 };
                 items.get = function (index) {
                     return this._value[index];
                 }
+                items.getAll = function () {
+                    return this._value;
+                }
+                items.size = function () {
+                    return this.length;
+                }
                 items.clear = function () {
                     // this._value = [];
                 }
+                self.requestData = items;
                 if (typeof self.onResponse) {
-                    self.onResponse(self, items);
+                    self.onResponse(self, self.requestData);
                 } else {
                     //未设置：获得广告策略结果的处理代码
                 }
@@ -61,19 +79,21 @@ AdStrategy.prototype.request = function () {
             }
         }
     }
-    xhr.send();
+    var data = {
+        adposition_id: this.adBannerId
+    }
+    xhr.send(JSON.stringify(data));
 }
 AdStrategy.prototype.requestSelfPlay = function () {
     //自播放广告
 }
 
 function AdPlayer(context) {
-    this.context = context;
+    this.context = context ? context : "";
     this.callback = {};
-    this.playloop = 0;//设置播放次数
 }
 AdPlayer.prototype.setContainer = function (id) {
-    this.container = document.getElementById(id);
+    this.containerId = id;
 }
 function IAdPlayerCallbackListener(obj) {
     this.onPrepared = obj.onPrepared;
@@ -85,7 +105,7 @@ AdPlayer.prototype.setAdStrategy = function (ads) {
     if (ads.constructor != AdStrategy) {
         return;
     }
-    this._AdStrategy = AdStrategy;
+    this._AdStrategy = ads;
 }
 AdPlayer.prototype.setDefaultAd = function () {
     //指定播放器的默认播放内容
@@ -115,29 +135,120 @@ AdPlayer.prototype.prepare = function () {
 }
 
 AdPlayer.prototype.play = function (id) {
-    this.container.innerHtml = "";
-    //广告控件播放广告内容
-    var self = this;
-    var marquee = document.createElement("marquee");
-    marquee.appendChild(document.createTextNode(this.context.mes));
-    marquee.id = "marquee_id";
-    
-    marquee.behavior = "slide";
-    marquee.direction = "left";
-    marquee.loop = "1";
-    marquee.style.height = this.container.offsetHeight + "px";
-    marquee.style.width = this.container.offsetWidth + "px";
-    marquee.onfinish = function () {
-        //完成一次，触发一次回调
-        if (self.callback.onCompleted) {
-            self.callback.onCompleted();
-        }
-        //每放完一次发送一次报告
-        self.placementReport();
+    var _data = [];
+    var style = {//广告位提取样式
+        colour: this._AdStrategy.requestData._adposition.colour,
+        speed: this._AdStrategy.requestData._adposition.roll_speed,
+        distance: this._AdStrategy.requestData._adposition.roll_distance,
+        background_img: this._AdStrategy.requestData._adposition.background_image_url,
+        disphaneity: this._AdStrategy.requestData._adposition.disphaneity
     }
+    if (id) {//播放给定Id，拼接参数
+        var data = this._AdStrategy.requestData;
+        for (var i = 0; i < data.length; i++) {
+            if (data.get(i).ad_id == id) {
+                _data.push(data.get(i));
+            }
+        }
+    } else {//播放全部
+        _data = this._AdStrategy.requestData.getAll();
+    }
+    this.playItems(style, _data);
 }
-AdPlayer.prototype.stop = function () {
+AdPlayer.prototype.playItems = function (style, context) {
+    //根据内容播放
+    //给当前播放绑定唯一标识
+    this._playeRicon = "adplayer" + (new Date()).getTime();
+    var div = document.createElement("div");
+    div.id = this._playeRicon;
+    div.style.position = "relative";
+    div.style.height = "100%";
+    div.style.width = "100%";
+    div.style.lineHeight = document.getElementById(this.containerId).offsetHeight + "px";
+    div.style.overflow = "hidden";
+    //设置背景图
+    if (style.background_img) {
+        div.style.backgroundImage = "url('" + style.background_img + "')";
+        div.style.backgroundSize = "100% 100%";
+        div.style.backgroundRepeat = "no-repeat";
+    }
+    //设置字体颜色
+    if (style.colour) {
+        div.style.color = style.colour;
+    }
+    //设置背景透明度
+    if (style.disphaneity) {
+        div.style.disphaneity = style.disphaneity;
+    }
+    //轮播列表
+    var ul = document.createElement("ul");
+    ul.id = this._playeRicon + "-ul";
+    ul.style.position = "absolute";
+    ul.style.listStyle = "none";
+    ul.style.margin = 0;
+    ul.style.padding = 0;
+    ul.style.left = document.getElementById(this.containerId).offsetWidth + "px";
+    var liList = [];
+    for (var i = 0; i < context.length; i++) {
+        var loopitem = context[i].subtitle_content;
+        liList.push("<li id='" + this._playeRicon + "-ul-" + i + "' style='display:inline-block;white-space:nowrap;'>" + loopitem + "</li>");
+    }
+    ul.innerHTML = liList.join("");
+    div.appendChild(ul);
+    document.getElementById(this.containerId).appendChild(div);
+    var self = this;
+    var initBoolean = true;
+    var _timeInteval = setInterval(function () {
+        var op = document.getElementById(self._playeRicon + "-ul");
+        op.style.left = (op.offsetLeft - style.distance) + "px";
+        var op_child = op.firstElementChild;
+        //初始化屏幕显示
+        if (initBoolean) {//op.offsetHeight < op.parentNode.offsetHeight
+            var firstWidth = op.offsetWidth;
+            while (op.offsetWidth < op.parentNode.offsetWidth) {
+                //计算第一个的id
+                var oplast_child = op.lastElementChild;
+                var oldId = oplast_child.id.split("-");
+                var newId_i = parseInt(oldId[oldId.length - 1]) + 1;
+                for (var i = 0; i < context.length; i++) {
+                    var loopitem = context[i].subtitle_content;
+                    var li = document.createElement("li");
+                    li.id = self._playeRicon + "-ul-" + (newId_i + i);
+                    li.style.display = "inline-block";
+                    li.style.whiteSpace = "nowrap";
+                    li.innerHTML = loopitem;
+                    op.style.width = (op.offsetWidth + firstWidth) + "px";
+                    op.appendChild(li);
+                }
+            }
+            op.style.right = "0px";
+            initBoolean = false;
+            return;
+        }
+        var oplast_child = op.lastElementChild;
+        if (op.offsetLeft + op_child.offsetWidth < 0) {
+            var _width = op_child.offsetWidth;
+            op.removeChild(op_child);
+            op.style.left = "0px";
+            op.style.width = (op.offsetWidth - _width) + "px";//去掉长度
+            // op.appendChild(spt);
+            //调用播放完成回调
+            console.log("+");
+        }
+        if(oplast_child.offsetLeft + op.offsetLeft + oplast_child.offsetWidth < op.parentNode.offsetWidth && op.offsetHeight == op.parentNode.offsetHeight){
+            var _firstChild = op.firstElementChild;
+            var newNode = _firstChild.cloneNode(true);
+            op.style.width = (op.offsetWidth + _firstChild.offsetWidth) + "px";
+            op.appendChild(newNode);
+        }
+    }, style.speed);
+    //将定时器标识写入div的data-time属性
+    document.getElementById(this._playeRicon).setAttribute("data-time", _timeInteval);
+}
 
+AdPlayer.prototype.stop = function () {
+    var _timeInteval = document.getElementById(this._playeRicon).getAttribute("data-time");
+    clearInterval(_timeInteval);
 }
 AdPlayer.prototype.placementReport = function (rptParams) {
     //设置自播放报告
