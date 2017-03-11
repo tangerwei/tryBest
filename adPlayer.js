@@ -130,7 +130,7 @@ AdPlayer.prototype.setCallbackListener = function (obj) {//重写回调
 //广告控件准备广告内容
 AdPlayer.prototype.prepare = function () {
     if (this.callback.onPrepared) {
-        this.callback.onPrepared();
+        this.callback.onPrepared(this);
     }
 }
 
@@ -191,7 +191,7 @@ AdPlayer.prototype.playItems = function (style, context) {
     var liList = [];
     for (var i = 0; i < context.length; i++) {
         var loopitem = context[i].subtitle_content;
-        liList.push("<li id='" + this._playeRicon + "-ul-" + i + "' style='display:inline-block;white-space:nowrap;'>" + loopitem + "</li>");
+        liList.push("<li id='" + this._playeRicon + "-ul-" + i + "' style='display:inline-block;white-space:nowrap;' data-id = '"+ context[i].ad_id +"'>" + loopitem + "</li>");
     }
     ul.innerHTML = liList.join("");
     div.appendChild(ul);
@@ -214,6 +214,7 @@ AdPlayer.prototype.playItems = function (style, context) {
                     var loopitem = context[i].subtitle_content;
                     var li = document.createElement("li");
                     li.id = self._playeRicon + "-ul-" + (newId_i + i);
+                    li.setAttribute("data-id") = context[i].ad_id;
                     li.style.display = "inline-block";
                     li.style.whiteSpace = "nowrap";
                     li.innerHTML = loopitem;
@@ -228,12 +229,16 @@ AdPlayer.prototype.playItems = function (style, context) {
         var oplast_child = op.lastElementChild;
         if (op.offsetLeft + op_child.offsetWidth < 0) {
             var _width = op_child.offsetWidth;
+            var compelteId = op_child.getAttribute("data-id");
             op.removeChild(op_child);
             op.style.left = "0px";
             op.style.width = (op.offsetWidth - _width) + "px";//去掉长度
             // op.appendChild(spt);
             //调用播放完成回调
-            console.log("+");
+            if(self.onCompleted){
+                self.onCompleted(self);
+            }
+            self.placementReport(compelteId);
         }
         if(oplast_child.offsetLeft + op.offsetLeft + oplast_child.offsetWidth < op.parentNode.offsetWidth && op.offsetHeight == op.parentNode.offsetHeight){
             var _firstChild = op.firstElementChild;
@@ -250,7 +255,7 @@ AdPlayer.prototype.stop = function () {
     var _timeInteval = document.getElementById(this._playeRicon).getAttribute("data-time");
     clearInterval(_timeInteval);
 }
-AdPlayer.prototype.placementReport = function (rptParams) {
+AdPlayer.prototype.placementReport = function (id,rptParams) {
     //设置自播放报告
     if (rptParams) {
 

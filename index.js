@@ -13,11 +13,11 @@ function init() {
     adplayer.setCallbackListener(new IAdPlayerCallbackListener({
         onPrepared: function (v) {
             console.log("adplayer onPrepared callback");
-            console.log("typeof v =" + typeof v);
+            console.log(v.constructor);
         },
         onCompleted: function (v) {
             console.log("adplayer onCompleted callback");
-            console.log("typeof v =" + typeof v);
+            console.log(v.constructor);
         },
         onError: function (v, code, message) {
             console.log("adplayer onError");
