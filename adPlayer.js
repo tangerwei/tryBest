@@ -1,14 +1,14 @@
-function AdStrategy(adBannerId, param) {
+function AdStrategySubtitle(adBannerId, param) {
     //
     this.adBannerId = adBannerId;
     if (typeof param !== undefined) {
         this.param = param;
     }
 }
-AdStrategy.prototype.setAquaPassAddress = function (ip) {
+AdStrategySubtitle.prototype.setAquaPassAddress = function (ip) {
     this.aquaPassAddress = ip;
 }
-AdStrategy.prototype.setAdItemAddress = function (ip) {
+AdStrategySubtitle.prototype.setAdItemAddress = function (ip) {
     this.adItemAddress = ip;
 }
 
@@ -17,7 +17,7 @@ function IAdStrategyResponseListener(obj) {
     this.onError = obj.onError;
 }
 
-AdStrategy.prototype.setOnResponseListener = function (obj) {
+AdStrategySubtitle.prototype.setOnResponseListener = function (obj) {
     if (obj.constructor != IAdStrategyResponseListener) {
         return;
     }
@@ -30,13 +30,11 @@ AdStrategy.prototype.setOnResponseListener = function (obj) {
         this.onError = obj.onError;
     }
 }
-AdStrategy.prototype.setParameter = function (key, value) {
+AdStrategySubtitle.prototype.setParameter = function (key, value) {
 
 }
-AdStrategy.prototype.onResponse = function () {
 
-}
-AdStrategy.prototype.request = function () {
+AdStrategySubtitle.prototype.request = function () {
     //发起广告策略的请求
     var self = this;
     var url = this.aquaPassAddress + "/aquapaas_adv/rest/ads/decision";
@@ -84,15 +82,15 @@ AdStrategy.prototype.request = function () {
     }
     xhr.send(JSON.stringify(data));
 }
-AdStrategy.prototype.requestSelfPlay = function () {
+AdStrategySubtitle.prototype.requestSelfPlay = function () {
     //自播放广告
 }
 
-function AdPlayer(context) {
+function AdPlayerSubtitle(context) {
     this.context = context ? context : "";
     this.callback = {};
 }
-AdPlayer.prototype.setContainer = function (id) {
+AdPlayerSubtitle.prototype.setContainer = function (id) {
     this.containerId = id;
 }
 function IAdPlayerCallbackListener(obj) {
@@ -100,17 +98,17 @@ function IAdPlayerCallbackListener(obj) {
     this.onCompleted = obj.onCompleted;
     this.onError = obj.onError;
 }
-AdPlayer.prototype.setAdStrategy = function (ads) {
+AdPlayerSubtitle.prototype.setAdStrategy = function (ads) {
     //判断ads是否为广告策略
-    if (ads.constructor != AdStrategy) {
+    if (ads.constructor != AdStrategySubtitle) {
         return;
     }
     this._AdStrategy = ads;
 }
-AdPlayer.prototype.setDefaultAd = function () {
+AdPlayerSubtitle.prototype.setDefaultAd = function () {
     //指定播放器的默认播放内容
 }
-AdPlayer.prototype.setCallbackListener = function (obj) {//重写回调
+AdPlayerSubtitle.prototype.setCallbackListener = function (obj) {//重写回调
     if (obj.constructor != IAdPlayerCallbackListener) {
         return;
     }
@@ -128,20 +126,21 @@ AdPlayer.prototype.setCallbackListener = function (obj) {//重写回调
     }
 }
 //广告控件准备广告内容
-AdPlayer.prototype.prepare = function () {
+AdPlayerSubtitle.prototype.prepare = function () {
     if (this.callback.onPrepared) {
         this.callback.onPrepared(this);
     }
 }
 
-AdPlayer.prototype.play = function (id) {
+AdPlayerSubtitle.prototype.play = function (id) {
     var _data = [];
     var style = {//广告位提取样式
         colour: this._AdStrategy.requestData._adposition.colour,
         speed: this._AdStrategy.requestData._adposition.roll_speed,
         distance: this._AdStrategy.requestData._adposition.roll_distance,
         background_img: this._AdStrategy.requestData._adposition.background_image_url,
-        disphaneity: this._AdStrategy.requestData._adposition.disphaneity
+        disphaneity: this._AdStrategy.requestData._adposition.diaphaneity,
+        fontSize:this._AdStrategy.requestData._adposition.font_size
     }
     if (id) {//播放给定Id，拼接参数
         var data = this._AdStrategy.requestData;
@@ -155,7 +154,7 @@ AdPlayer.prototype.play = function (id) {
     }
     this.playItems(style, _data);
 }
-AdPlayer.prototype.playItems = function (style, context) {
+AdPlayerSubtitle.prototype.playItems = function (style, context) {
     //根据内容播放
     //给当前播放绑定唯一标识
     this._playeRicon = "adplayer" + (new Date()).getTime();
@@ -166,19 +165,28 @@ AdPlayer.prototype.playItems = function (style, context) {
     div.style.width = "100%";
     div.style.lineHeight = document.getElementById(this.containerId).offsetHeight + "px";
     div.style.overflow = "hidden";
-    //设置背景图
-    if (style.background_img) {
-        div.style.backgroundImage = "url('" + style.background_img + "')";
-        div.style.backgroundSize = "100% 100%";
-        div.style.backgroundRepeat = "no-repeat";
-    }
     //设置字体颜色
     if (style.colour) {
         div.style.color = style.colour;
     }
     //设置背景透明度
     if (style.disphaneity) {
-        div.style.disphaneity = style.disphaneity;
+        var _rgbao = parseInt(style.disphaneity)/100;
+        div.style.background = "rgba(255,255,255,"+ _rgbao +")";
+    }
+    //设置背景图
+    if (style.background_img) {
+        var _str = style.background_img.split("/");
+        if(_str[0] == ".."){
+            _str[0] = "";
+            style.background_img = _str.join("/");
+        }
+        div.style.backgroundImage = "url('" + style.background_img + "')";
+        div.style.backgroundSize = "100% 100%";
+    }
+    //字体大小
+    if(style.fontSize) {
+        div.style.fontSize = style.fontSize + "px";
     }
     //轮播列表
     var ul = document.createElement("ul");
@@ -191,7 +199,7 @@ AdPlayer.prototype.playItems = function (style, context) {
     var liList = [];
     for (var i = 0; i < context.length; i++) {
         var loopitem = context[i].subtitle_content;
-        liList.push("<li id='" + this._playeRicon + "-ul-" + i + "' style='display:inline-block;white-space:nowrap;' data-id = '"+ context[i].ad_id +"'>" + loopitem + "</li>");
+        liList.push("<li id='" + this._playeRicon + "-ul-" + i + "' style='display:inline-block;white-space:nowrap;padding-left:20px' data-id = '"+ context[i].ad_id +"'>" + loopitem + "</li>");
     }
     ul.innerHTML = liList.join("");
     div.appendChild(ul);
@@ -214,9 +222,10 @@ AdPlayer.prototype.playItems = function (style, context) {
                     var loopitem = context[i].subtitle_content;
                     var li = document.createElement("li");
                     li.id = self._playeRicon + "-ul-" + (newId_i + i);
-                    li.setAttribute("data-id") = context[i].ad_id;
+                    li.setAttribute("data-id",context[i].ad_id);
                     li.style.display = "inline-block";
                     li.style.whiteSpace = "nowrap";
+                    li.style.paddingLeft = "20px";
                     li.innerHTML = loopitem;
                     op.style.width = (op.offsetWidth + firstWidth) + "px";
                     op.appendChild(li);
@@ -240,7 +249,8 @@ AdPlayer.prototype.playItems = function (style, context) {
             }
             self.placementReport(compelteId);
         }
-        if(oplast_child.offsetLeft + op.offsetLeft + oplast_child.offsetWidth < op.parentNode.offsetWidth && op.offsetHeight == op.parentNode.offsetHeight){
+        //Math.abs是为了去掉边框的影响
+        if(oplast_child.offsetLeft + op.offsetLeft + oplast_child.offsetWidth < op.parentNode.offsetWidth && Math.abs(op.offsetHeight - op.parentNode.offsetHeight) < 6){
             var _firstChild = op.firstElementChild;
             var newNode = _firstChild.cloneNode(true);
             op.style.width = (op.offsetWidth + _firstChild.offsetWidth) + "px";
@@ -251,11 +261,12 @@ AdPlayer.prototype.playItems = function (style, context) {
     document.getElementById(this._playeRicon).setAttribute("data-time", _timeInteval);
 }
 
-AdPlayer.prototype.stop = function () {
+AdPlayerSubtitle.prototype.stop = function () {
     var _timeInteval = document.getElementById(this._playeRicon).getAttribute("data-time");
     clearInterval(_timeInteval);
 }
-AdPlayer.prototype.placementReport = function (id,rptParams) {
+AdPlayerSubtitle.prototype.placementReport = function (id,rptParams) {
+    console.log(id);
     //设置自播放报告
     if (rptParams) {
 
